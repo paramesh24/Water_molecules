@@ -8,7 +8,7 @@ bond_style       harmonic
 angle_style      harmonic
 #kspace_style     pppm/tip4p 0.00001
 
-read_data        2d.data
+read_data        3d.data
   
 mass             1 15.9994 # O (water TIP4P/2005)
 mass             2 1.008 # H (water TIP4P/2005)
