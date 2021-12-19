@@ -1,0 +1,56 @@
+units            real
+atom_style       full
+dimension        2
+boundary         f f p
+pair_style       lj/cut/tip4p/cut 1 2 1 1 0.1577 10.0 8.5 #1
+pair_modify      shift yes mix geometric
+bond_style       harmonic
+angle_style      harmonic
+#kspace_style    pppm/tip4p 0.00001
+
+read_data        rand.data
+  
+mass             1 15.9994 # O (water TIP4P/2005)
+mass             2 1.008 # H (water TIP4P/2005)
+
+bond_coeff       1  0.0   0.9572
+angle_coeff      1  0.0   104.52
+
+pair_coeff       1 1  0.21084  3.1668 #2
+pair_coeff       2 2  0.0     0.0
+pair_coeff       1 2  0.0     0.0
+group            tip4p1 type  1  2
+
+neighbor         4.0 bin
+neigh_modify     delay 10 check yes
+
+
+
+thermo_style    custom time temp etotal press vol density
+thermo          100
+dump            d2 all custom 10 water.trj id type x y z 
+dump_modify     d2 sort id
+
+minimize        1e-9 1e-10 10000 100000
+print           "Finished minimizing"
+
+fix            fi  tip4p1 wall/reflect xlo 0.0 xhi 60 ylo 0.0 yhi 60 units box
+fix            fShakeTIP4P tip4p1 shake 0.0001 20 0 b 1 a 1
+timestep        2
+
+
+velocity        tip4p1 create 400 102939 dist gaussian mom yes rot yes  
+
+fix             1  tip4p1 nve
+run             10000
+unfix           1
+
+variable        tem equal temp
+variable        pre equal press 
+fix             2 tip4p1 nvt temp ${tem} 270 10 
+run             200000
+unfix           2
+
+
+
+
